@@ -15,26 +15,39 @@ const Section: React.FC<SectionProps> = ({ data, index, isLast = false }) => {
     offset: ["start end", "end start"]
   });
 
-  // Opacity Logic:
-  // index 0: Fade out only.
-  // Normal sections: Fade in -> Plateau -> Fade out.
-  // Last section: Fade in -> Plateau -> STAY VISIBLE (until covered by next section).
-  // This ensures the "Climax" text is readable until the white surprise section slides over it.
+  // Smoother Opacity Logic
   const opacity = useTransform(
     scrollYProgress, 
-    index === 0 ? [0, 0.8] : [0.1, 0.3, 0.8, 0.98], 
-    index === 0 ? [1, 0] : isLast ? [0, 1, 1, 1] : [0, 1, 1, 0]
+    // Entering -> Center -> Leaving
+    index === 0 
+      ? [0, 0.8] // First slide just fades out
+      : [0, 0.2, 0.5, 0.8], // Others fade in/out
+    index === 0 
+      ? [1, 0] 
+      : isLast 
+        ? [0, 1, 1, 1] // Last slide stays visible
+        : [0, 1, 1, 0] // Normal slides fade out
   );
   
-  const scale = useTransform(scrollYProgress, [0.1, 0.5, 0.9], [0.8, 1, 1.2]);
+  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [1, 1.1, 1.2]);
   const grayscale = data.type === 'gray' ? 'grayscale(100%)' : 'grayscale(0%)';
 
-  // Specific transition logic for the final color reveal
   const isColorSection = data.type === 'color';
 
   return (
-    // Used h-[100dvh] for better mobile support (dynamic viewport height)
-    <div ref={ref} className="h-[100dvh] w-full flex items-center justify-center relative overflow-hidden sticky top-0 bg-black">
+    // FORCE FULL HEIGHT: Added inline style height: '100dvh' to guarantee it works on mobile
+    // Added flex/items-center/justify-center explicitly in style to prevent Tailwind loading glitches
+    <div 
+      ref={ref} 
+      className="w-full relative overflow-hidden sticky top-0 bg-black"
+      style={{ 
+        height: '100dvh', 
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
       {/* Background Image */}
       <motion.div 
         style={{ scale, filter: isColorSection ? 'none' : grayscale }}
@@ -43,25 +56,29 @@ const Section: React.FC<SectionProps> = ({ data, index, isLast = false }) => {
         <img 
           src={data.image} 
           alt="Atmosphere" 
-          className="w-full h-full object-cover transition-all duration-1000 opacity-100"
+          className="w-full h-full object-cover transition-all duration-1000 opacity-90"
         />
-        {/* Overlay to ensure text readability */}
-        <div className={`absolute inset-0 ${isColorSection ? 'bg-black/50' : 'bg-black/60'}`} />
+        {/* Stronger Overlay for better text readability */}
+        <div className={`absolute inset-0 ${isColorSection ? 'bg-black/40' : 'bg-black/70'}`} />
+        {/* Gradient at the bottom to help text pop */}
+        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent" />
       </motion.div>
 
       {/* Text Content */}
       <motion.div 
         style={{ opacity }}
-        className="relative z-10 text-center px-6 max-w-3xl"
+        className="relative z-10 text-center px-6 max-w-3xl mx-auto flex flex-col items-center justify-center h-full"
       >
-        <h2 className={`font-serif text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight drop-shadow-2xl ${isColorSection ? 'text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]' : 'text-gray-300'}`}>
-          {data.text}
-        </h2>
-        {data.subText && (
-          <p className={`font-sans text-lg md:text-xl font-light tracking-wide drop-shadow-xl ${isColorSection ? 'text-white/90 font-medium drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]' : 'text-gray-400'}`}>
-            {data.subText}
-          </p>
-        )}
+        <div className="backdrop-blur-[2px] p-4 rounded-xl">
+          <h2 className="font-serif text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]">
+            {data.text}
+          </h2>
+          {data.subText && (
+            <p className="font-sans text-lg md:text-xl font-light tracking-wide text-gray-200 drop-shadow-[0_2px_2px_rgba(0,0,0,1)]">
+              {data.subText}
+            </p>
+          )}
+        </div>
       </motion.div>
     </div>
   );
