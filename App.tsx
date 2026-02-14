@@ -19,8 +19,8 @@ const storyData: StorySection[] = [
     id: 'gray-1',
     text: "Dünya sadece griden ibaret kalırdı.",
     subText: "Sabah kahvelerinin kokusu, yağmurun sesi anlamsızlaşırdı.",
-    // Fixed: Gloomy misty forest (Working link)
-    image: "https://images.unsplash.com/photo-1485594050903-8e8ee5326c90?q=80&w=1920&auto=format&fit=crop",
+    // Fixed: Gloomy misty road/forest (Highly reliable link)
+    image: "https://images.unsplash.com/photo-1445217143695-467124038776?q=80&w=1920&auto=format&fit=crop",
     type: 'gray'
   },
   {
