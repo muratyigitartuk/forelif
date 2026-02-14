@@ -2,13 +2,21 @@
 <html lang="tr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Elifim</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <script>
+      // CRITICAL FIX: Polyfill process for browser environment to prevent "process is not defined" crashes
+      window.process = {
+        env: {
+          NODE_ENV: 'production',
+          API_KEY: '' // Will be populated by build system or remain empty safely
+        }
+      };
+
       tailwind.config = {
         theme: {
           extend: {
@@ -37,6 +45,7 @@
     <style>
       body {
         overscroll-behavior-y: none;
+        background-color: #000; /* Prevent white flash */
       }
       .hide-scrollbar::-webkit-scrollbar {
         display: none;
@@ -45,21 +54,70 @@
         -ms-overflow-style: none;
         scrollbar-width: none;
       }
+      /* Simple CSS Loader */
+      #loading-screen {
+        position: fixed;
+        inset: 0;
+        background: black;
+        color: #fb7185;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        transition: opacity 0.5s ease;
+      }
+      .heart-loader {
+        animation: heartbeat 1.5s infinite;
+        font-size: 2rem;
+      }
+      @keyframes heartbeat {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+      }
     </style>
   <script type="importmap">
 {
   "imports": {
-    "react/": "https://esm.sh/react@^19.2.4/",
-    "react": "https://esm.sh/react@^19.2.4",
+    "react/": "https://esm.sh/react@18.3.1/",
+    "react": "https://esm.sh/react@18.3.1",
     "@google/genai": "https://esm.sh/@google/genai@^1.41.0",
-    "lucide-react": "https://esm.sh/lucide-react@^0.564.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
-    "framer-motion": "https://esm.sh/framer-motion@^12.34.0"
+    "lucide-react": "https://esm.sh/lucide-react@0.344.0",
+    "react-dom/": "https://esm.sh/react-dom@18.3.1/",
+    "react-dom": "https://esm.sh/react-dom@18.3.1",
+    "framer-motion": "https://esm.sh/framer-motion@11.0.8"
   }
 }
 </script>
 </head>
   <body class="bg-black text-white antialiased selection:bg-rose-200 selection:text-rose-900">
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+      <div class="heart-loader">❤️</div>
+    </div>
+
     <div id="root"></div>
+
+    <script type="module" src="/index.tsx"></script>
+    
+    <!-- Remove loader when React mounts -->
+    <script>
+      window.addEventListener('load', () => {
+        // Fallback: if React takes too long or fails, the loader stays. 
+        // Once React hydrates, it will clear the root, but we can also hide this manually via JS in App if needed.
+        // For now, we let React render over it, or we can fade it out.
+        const observer = new MutationObserver((mutations) => {
+          if (document.getElementById('root').children.length > 0) {
+            const loader = document.getElementById('loading-screen');
+            if (loader) {
+              loader.style.opacity = '0';
+              setTimeout(() => loader.remove(), 500);
+            }
+            observer.disconnect();
+          }
+        });
+        observer.observe(document.getElementById('root'), { childList: true });
+      });
+    </script>
   </body>
 </html>

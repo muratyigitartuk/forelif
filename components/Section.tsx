@@ -5,9 +5,10 @@ import { StorySection } from '../types';
 interface SectionProps {
   data: StorySection;
   index: number;
+  isLast?: boolean;
 }
 
-const Section: React.FC<SectionProps> = ({ data, index }) => {
+const Section: React.FC<SectionProps> = ({ data, index, isLast = false }) => {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -15,12 +16,14 @@ const Section: React.FC<SectionProps> = ({ data, index }) => {
   });
 
   // Opacity Logic:
-  // We extend the visibility range significantly. 
-  // especially for the colored section, we want it to stay visible right until it goes off screen.
+  // index 0: Fade out only.
+  // Normal sections: Fade in -> Plateau -> Fade out.
+  // Last section: Fade in -> Plateau -> STAY VISIBLE (until covered by next section).
+  // This ensures the "Climax" text is readable until the white surprise section slides over it.
   const opacity = useTransform(
     scrollYProgress, 
     index === 0 ? [0, 0.8] : [0.1, 0.3, 0.8, 0.98], 
-    index === 0 ? [1, 0] : [0, 1, 1, 0]
+    index === 0 ? [1, 0] : isLast ? [0, 1, 1, 1] : [0, 1, 1, 0]
   );
   
   const scale = useTransform(scrollYProgress, [0.1, 0.5, 0.9], [0.8, 1, 1.2]);
@@ -30,7 +33,8 @@ const Section: React.FC<SectionProps> = ({ data, index }) => {
   const isColorSection = data.type === 'color';
 
   return (
-    <div ref={ref} className="h-screen w-full flex items-center justify-center relative overflow-hidden sticky top-0 bg-black">
+    // Used h-[100dvh] for better mobile support (dynamic viewport height)
+    <div ref={ref} className="h-[100dvh] w-full flex items-center justify-center relative overflow-hidden sticky top-0 bg-black">
       {/* Background Image */}
       <motion.div 
         style={{ scale, filter: isColorSection ? 'none' : grayscale }}
@@ -41,7 +45,7 @@ const Section: React.FC<SectionProps> = ({ data, index }) => {
           alt="Atmosphere" 
           className="w-full h-full object-cover transition-all duration-1000 opacity-100"
         />
-        {/* Increased overlay opacity for color section to ensure text is readable against bright sunsets */}
+        {/* Overlay to ensure text readability */}
         <div className={`absolute inset-0 ${isColorSection ? 'bg-black/50' : 'bg-black/60'}`} />
       </motion.div>
 
@@ -50,7 +54,6 @@ const Section: React.FC<SectionProps> = ({ data, index }) => {
         style={{ opacity }}
         className="relative z-10 text-center px-6 max-w-3xl"
       >
-        {/* Added stronger text shadows and ensured white text for the final section */}
         <h2 className={`font-serif text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight drop-shadow-2xl ${isColorSection ? 'text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]' : 'text-gray-300'}`}>
           {data.text}
         </h2>

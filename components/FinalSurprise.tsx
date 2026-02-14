@@ -17,7 +17,8 @@ Seni seviyorum Elifim,
 Siyah beyaz filmimin en güzel rengi.`;
 
   return (
-    <div className="min-h-screen w-full bg-romantic-50 flex flex-col items-center justify-center p-8 relative overflow-hidden">
+    // Changed min-h-screen to min-h-[100dvh] to prevent mobile address bar glitches
+    <div className="min-h-[100dvh] w-full bg-romantic-50 flex flex-col items-center justify-center p-8 relative overflow-hidden">
       {/* Decorative Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(20)].map((_, i) => (

@@ -19,7 +19,7 @@ const storyData: StorySection[] = [
     id: 'gray-1',
     text: "Dünya sadece griden ibaret kalırdı.",
     subText: "Sabah kahvelerinin kokusu, yağmurun sesi anlamsızlaşırdı.",
-    // Fixed: Gloomy misty road/forest (Highly reliable link)
+    // Fixed: Gloomy misty road/forest - High quality & reliable
     image: "https://images.unsplash.com/photo-1445217143695-467124038776?q=80&w=1920&auto=format&fit=crop",
     type: 'gray'
   },
@@ -45,7 +45,7 @@ const storyData: StorySection[] = [
     subText: "Kaderin en güzel tesadüfü gerçekleşti.",
     // Dramatic clouds/light
     image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1920&auto=format&fit=crop",
-    type: 'gray' // Starts gray, logic handles transition visual
+    type: 'gray'
   },
   {
     id: 'climax',
@@ -105,7 +105,12 @@ const App: React.FC = () => {
       {/* Story Sections */}
       <div className="relative z-0">
         {storyData.map((section, index) => (
-          <Section key={section.id} data={section} index={index} />
+          <Section 
+            key={section.id} 
+            data={section} 
+            index={index} 
+            isLast={index === storyData.length - 1} 
+          />
         ))}
       </div>
 
