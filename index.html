@@ -100,24 +100,42 @@
 
     <script type="module" src="/index.tsx"></script>
     
-    <!-- Remove loader when React mounts -->
+    <!-- Remove loader logic -->
     <script>
-      window.addEventListener('load', () => {
-        // Fallback: if React takes too long or fails, the loader stays. 
-        // Once React hydrates, it will clear the root, but we can also hide this manually via JS in App if needed.
-        // For now, we let React render over it, or we can fade it out.
+      (function() {
+        function removeLoader() {
+          const loader = document.getElementById('loading-screen');
+          if (loader && !loader.classList.contains('removing')) {
+            loader.classList.add('removing');
+            loader.style.opacity = '0';
+            setTimeout(() => {
+              if (loader.parentNode) loader.parentNode.removeChild(loader);
+            }, 500);
+          }
+        }
+
+        // 1. Observe for React mounting
         const observer = new MutationObserver((mutations) => {
-          if (document.getElementById('root').children.length > 0) {
-            const loader = document.getElementById('loading-screen');
-            if (loader) {
-              loader.style.opacity = '0';
-              setTimeout(() => loader.remove(), 500);
-            }
+          const root = document.getElementById('root');
+          if (root && root.children.length > 0) {
+            removeLoader();
             observer.disconnect();
           }
         });
-        observer.observe(document.getElementById('root'), { childList: true });
-      });
+        
+        const root = document.getElementById('root');
+        if (root) {
+          // 2. Check immediately
+          if (root.children.length > 0) {
+            removeLoader();
+          } else {
+            observer.observe(root, { childList: true });
+          }
+        }
+
+        // 3. Safety timeout (4 seconds) - Ensures user isn't stuck forever
+        setTimeout(removeLoader, 4000);
+      })();
     </script>
   </body>
 </html>

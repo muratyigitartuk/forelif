@@ -68,6 +68,15 @@ const App: React.FC = () => {
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
 
   useEffect(() => {
+    // Force remove loader when App mounts
+    const loader = document.getElementById('loading-screen');
+    if (loader) {
+      loader.style.opacity = '0';
+      setTimeout(() => {
+        if (loader.parentNode) loader.parentNode.removeChild(loader);
+      }, 500);
+    }
+
     const handleScroll = () => {
       if (window.scrollY > 100) {
         setShowScrollIndicator(false);
